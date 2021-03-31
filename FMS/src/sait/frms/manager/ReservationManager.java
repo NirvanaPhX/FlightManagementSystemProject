@@ -16,20 +16,22 @@ public class ReservationManager {
 		populateFromBinary();
 	}
 
-	public Reservation makeReservation(Flight flight, String name, String citizenship)
-			throws InvalidNameException, InvalidCitizenshipException, NoMoreSeatsException, NullFlightException {
+	public Reservation makeReservation(Flight flight, String name, String citizenship) throws InvalidNameException,
+			InvalidCitizenshipException, NoMoreSeatsException, NullFlightException, InvalidFlightCodeException {
 		if (name == null || name.equals(""))
 			throw new InvalidNameException();
 		if (citizenship == null || citizenship.equals(""))
 			throw new InvalidCitizenshipException();
 		if (flight == null)
-			throw new InvalidCitizenshipException();
+			throw new InvalidFlightCodeException();
 		if (flight.getSeats() < 1)
 			throw new NoMoreSeatsException();
 
 		String reservationCode = generateReservationCode(flight);
 
 		Reservation reservation = new Reservation(reservationCode, flight, name, citizenship);
+
+		flight.setSeats(flight.getSeats() - 1);
 		reservations.add(reservation);
 		return new Reservation(reservationCode, flight, name, citizenship);
 	}
@@ -40,7 +42,7 @@ public class ReservationManager {
 			reservationlist.add(findReservationByCode(reservationCode));
 		}
 		if ((!name.equals("")) && name != null) {
-			for (Reservation r: reservations) {
+			for (Reservation r : reservations) {
 				if (r.getName().contains(name)) {
 					reservationlist.add(r);
 				}
@@ -69,30 +71,22 @@ public class ReservationManager {
 	}
 
 	public void persist() {
-		for (Reservation reservation : reservations) {
-			try (RandomAccessFile raf = new RandomAccessFile(RESERVATIONS_BINARY, "rw")) {
-				long pos;
-				for (pos = 0; pos < raf.length(); pos += 248) {
-					raf.seek(pos + 247);
-					boolean active = raf.readBoolean();
-//					System.out.println(active + " " + pos);
-					if (!active)
-						break;
+		try (RandomAccessFile raf = new RandomAccessFile(RESERVATIONS_BINARY, "rw")) {
+			for (Reservation reservation : reservations) {
+				if (reservation.isActive()) {
+					raf.writeUTF(String.format("%-5s", reservation.getCode()));
+					raf.writeUTF(String.format("%-7s", reservation.getFlightCode()));
+					raf.writeUTF(String.format("%-17s", reservation.getAirline()));
+					raf.writeUTF(String.format("%-100s", reservation.getName()));
+					raf.writeUTF(String.format("%-100s", reservation.getCitizenship()));
+					raf.writeDouble(reservation.getCost());
+					raf.writeBoolean(reservation.isActive());
 				}
-				raf.seek(pos);
-				raf.writeUTF(String.format("%-5s", reservation.getCode()));
-				raf.writeUTF(String.format("%-7s", reservation.getFlightCode()));
-				raf.writeUTF(String.format("%-17s", reservation.getAirline()));
-				raf.writeUTF(String.format("%-100s", reservation.getName()));
-				raf.writeUTF(String.format("%-100s", reservation.getCitizenship()));
-				raf.writeDouble(reservation.getCost());
-				raf.writeBoolean(reservation.isActive());
-
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
 			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -124,7 +118,7 @@ public class ReservationManager {
 		} catch (EOFException e) {
 			System.out.println("Reach end of File");
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			System.out.println("File doesn't exist yet.");
 		} catch (IOException e) {
 			System.out.println("No such file please check your file path and name.");
 		} catch (InvalidNameException e) {
@@ -134,4 +128,26 @@ public class ReservationManager {
 		}
 	}
 
+	public ArrayList<String> getCodeListFromBinary() {
+		ArrayList<String> codeList = new ArrayList<>();
+		try (RandomAccessFile raf = new RandomAccessFile(RESERVATIONS_BINARY, "r")) {
+			for (long position = 0; position < raf.length(); position += 248) {
+				raf.seek(position);
+				String reservationCode = raf.readUTF().trim();
+				codeList.add(reservationCode);
+			}
+		} catch (EOFException e) {
+			System.out.println("Reach end of File");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			System.out.println("No such file please check your file path and name.");
+		}
+		return codeList;
+
+	}
+	
+	public void removeElementsFromList(Reservation r) {
+		reservations.remove(r);
+	}
 }

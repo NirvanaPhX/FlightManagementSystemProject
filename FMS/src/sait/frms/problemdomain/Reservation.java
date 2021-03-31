@@ -4,13 +4,13 @@ import sait.frms.exception.InvalidCitizenshipException;
 import sait.frms.exception.InvalidNameException;
 
 public class Reservation {
-	private String code; // 5  bytes
-	private String flightCode; // 7 bytes
-	private String airline; // max 17 bytes
-	private String name; //100 bytes
-	private String citizenship; // 100 bytes
-	private double cost; // 8 bytes
-	private boolean active; // 1 byte
+	private String code; 
+	private String flightCode; 
+	private String airline; 
+	private String name; 
+	private String citizenship; 
+	private double cost; 
+	private boolean active; 
 	
 	static int RECORD_SIZE = 5 + 1 + 7 + 1 + 17 + 1 + 100 + 1 + 100 + 1 + 8 + 1 + 1 + 1;
 	
@@ -82,6 +82,7 @@ public class Reservation {
 
 	@Override
 	public String toString() {
-		return code + "," + flightCode + "," + airline + "," + name + "," + citizenship + "," + cost;
+//		return code + "," + flightCode + "," + airline + "," + name + "," + citizenship + "," + cost;
+		return code;
 	}	
 }

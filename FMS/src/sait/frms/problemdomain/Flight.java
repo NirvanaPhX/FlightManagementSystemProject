@@ -1,5 +1,5 @@
 package sait.frms.problemdomain;
-
+ 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -81,12 +81,12 @@ public class Flight {
 
 	@Override
 	public String toString() {
-		return code + ",From:" + from + ",To:" + to + ",Day:" + weekday + ",Cost"
+		return code + ", From: " + from + ", To: " + to + ", Day: " + weekday + ", Cost: "
 				+ costPerSeat;
 	}
 
-	public String displayFlight() {
-		return code + ",From:" + from + ",To:" + to + ",Day:" + weekday + ",Cost:" + costPerSeat;
+	public void setSeats(int seats) {
+		this.seats = seats;
 	}
-	
+
 }

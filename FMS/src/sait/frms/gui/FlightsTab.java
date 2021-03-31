@@ -1,5 +1,4 @@
 package sait.frms.gui;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -264,7 +263,7 @@ public class FlightsTab extends TabBase {
 			airlineTextField.setText(flightManager.findAirportByCode(selectedFlight.getAirline()));
 			dayTextField.setText(selectedFlight.getWeekday());
 			timeTextField.setText(selectedFlight.getTime());
-			costTextField.setText(selectedFlight.getCostPerSeat() + "");
+			costTextField.setText(String.format("$%.2f", selectedFlight.getCostPerSeat()));
 			}
 		}
 	}
@@ -299,6 +298,8 @@ public class FlightsTab extends TabBase {
 				} catch (NoMoreSeatsException e1) {
 					JOptionPane.showMessageDialog(flightLabel, e1.getMessage());
 				} catch (NullFlightException e1) {
+					JOptionPane.showMessageDialog(flightLabel, e1.getMessage());
+				} catch (InvalidFlightCodeException e1) {
 					JOptionPane.showMessageDialog(flightLabel, e1.getMessage());
 				}
 				reservationManager.persist();

@@ -1,5 +1,4 @@
 package sait.frms.gui;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,6 +10,7 @@ import javax.swing.event.ListSelectionListener;
 
 import sait.frms.exception.InvalidCitizenshipException;
 import sait.frms.exception.InvalidNameException;
+import sait.frms.manager.FlightManager;
 import sait.frms.manager.ReservationManager;
 import sait.frms.problemdomain.Reservation;
 
@@ -23,6 +23,7 @@ public class ReservationsTab extends TabBase {
 	 * Instance of reservation manager.
 	 */
 	private ReservationManager reservationManager;
+	private FlightManager flightManager;
 
 	private JLabel codeLabel;
 	private JTextField codeTextField;
@@ -58,6 +59,7 @@ public class ReservationsTab extends TabBase {
 	 */
 	public ReservationsTab(ReservationManager reservationManager) {
 		this.reservationManager = reservationManager;
+		this.flightManager = new FlightManager();
 		panel.setLayout(new BorderLayout());
 
 		JPanel northPanel = createNorthPanel();
@@ -185,7 +187,7 @@ public class ReservationsTab extends TabBase {
 		costTextField.setEditable(false);
 		costLabel.setHorizontalAlignment(JLabel.RIGHT);
 
-		nameLabel = new JLabel("Cost:");
+		nameLabel = new JLabel("Name:");
 		nameTextField = new JTextField(15);
 		nameLabel.setHorizontalAlignment(JLabel.RIGHT);
 
@@ -253,8 +255,8 @@ public class ReservationsTab extends TabBase {
 				if (selectedReservation != null) {
 				codeTextField.setText(selectedReservation.getCode());
 				flightTextField.setText(selectedReservation.getFlightCode());
-				airlineTextField.setText(selectedReservation.getAirline());
-				costTextField.setText(selectedReservation.getCost() + "");
+				airlineTextField.setText(flightManager.findAirportByCode(selectedReservation.getAirline()));
+				costTextField.setText(String.format("$%.2f", selectedReservation.getCost()));
 				nameTextField.setText(selectedReservation.getName());
 				citizenshipTextField.setText(selectedReservation.getCitizenship());
 				}
@@ -280,9 +282,16 @@ public class ReservationsTab extends TabBase {
 					try {
 						reservationToBeChanged.setName(nameTextField.getText());
 						reservationToBeChanged.setCitizenship(citizenshipTextField.getText());
-						boolean active = statusComboBox.getSelectedItem() == "Active";
+						boolean active = statusComboBox.getSelectedItem().equals("Active");
 						reservationToBeChanged.setActive(active);
 						JOptionPane.showMessageDialog(updateButton, "Reservation Updated!");
+						// If selected reservation changed to inactive, increase the flight available seat by 1
+						if (!active) {
+							reservationsModel.removeElement(reservationToBeChanged);
+							reservationManager.removeElementsFromList(reservationToBeChanged);
+							flightManager.findFlightByCode(flightTextField.getText())
+							.setSeats(flightManager.findFlightByCode(flightTextField.getText()).getSeats()+1);
+						}
 					} catch (InvalidNameException e1) {
 						JOptionPane.showMessageDialog(nameTextField, e1.getMessage());
 					} catch (InvalidCitizenshipException e1) {
@@ -290,11 +299,7 @@ public class ReservationsTab extends TabBase {
 					}
 				}
 			}
-			// if (e.getSource() == statusComboBox) {
-			// if (statusComboBox.getSelectedItem() == "Inactive") {
-			// reservationsList.getSelectedValue().setActive(false);
-			// }
-			// }
+
 		}
 
 	}

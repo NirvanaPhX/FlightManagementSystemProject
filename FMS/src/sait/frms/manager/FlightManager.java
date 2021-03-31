@@ -1,5 +1,4 @@
 package sait.frms.manager;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -74,7 +73,7 @@ public class FlightManager {
 				if (weekday.equals(WEEKDAY_ANY)) {
 					newflights.add(flight);
 				}
-				if (weekday.equals(flight.getWeekday())) {
+				if (weekday.equals(flight.getWeekday().toUpperCase())) {
 					newflights.add(flight);
 				}
 			}
